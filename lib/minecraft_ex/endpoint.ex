@@ -1,6 +1,6 @@
 defmodule MinecraftEx.Endpoint do
   @moduledoc """
-  Documentation for MinecraftEx.Endpoint
+  TODO: Documentation for MinecraftEx.Endpoint
   """
 
   use ElvenGard.Network.Endpoint, otp_app: :minecraft_ex

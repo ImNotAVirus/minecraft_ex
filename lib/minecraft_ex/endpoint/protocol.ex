@@ -7,7 +7,7 @@ defmodule MinecraftEx.Endpoint.Protocol do
 
   require Logger
 
-  import ElvenGard.Network.Socket, only: [assign: 3]
+  import ElvenGard.Network.Socket, only: [assign: 2]
 
   alias ElvenGard.Network.Socket
 
@@ -21,7 +21,7 @@ defmodule MinecraftEx.Endpoint.Protocol do
     %Socket{transport: transport, transport_pid: transport_pid} = socket
     :ok = transport.setopts(transport_pid, packet: :raw, reuseaddr: true)
 
-    {:ok, assign(socket, :state, :init)}
+    {:ok, assign(socket, state: :init, token: nil)}
   end
 
   @impl true

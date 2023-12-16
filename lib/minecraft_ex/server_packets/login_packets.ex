@@ -5,16 +5,14 @@ defmodule MinecraftEx.Server.LoginPackets do
 
   use ElvenGard.Network.PacketSerializer
 
-  alias MinecraftEx.Types.{ByteArray, VarInt, MCString}
+  alias MinecraftEx.Types.{ByteArray, MCString}
 
   ## Login packets
 
   @serializable true
   defpacket 0x01, as: EncryptionRequest do
     field :server_id, MCString, default: ""
-    field :public_key_length, VarInt
-    field :public_key, ByteArray
-    field :verify_token_length, VarInt
-    field :verify_token, ByteArray
+    field :public_key, ByteArray, prefix: true
+    field :verify_token, ByteArray, prefix: true
   end
 end

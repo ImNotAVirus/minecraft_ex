@@ -3,7 +3,7 @@ defmodule MinecraftEx.Endpoint.PacketHandler do
   Documentation for MinecraftEx.Endpoint.PacketHandler
   """
 
-  import ElvenGard.Network.Socket, only: [assign: 3]
+  import ElvenGard.Network.Socket, only: [assign: 2]
 
   require Logger
   alias ElvenGard.Network.Socket
@@ -14,17 +14,19 @@ defmodule MinecraftEx.Endpoint.PacketHandler do
     PingRequest,
     StatusRequest
   }
-  
+
   alias MinecraftEx.Client.LoginPackets.{
+    EncryptionResponse,
     LoginStart
   }
 
+  alias MinecraftEx.Crypto
   alias MinecraftEx.PacketViews
 
   ## Handshake packets
-  
+
   def handle_packet(%Handshake{} = packet, socket) do
-    {:cont, assign(socket, :state, packet.next_state)}
+    {:cont, assign(socket, state: packet.next_state)}
   end
 
   def handle_packet(%StatusRequest{}, socket) do
@@ -38,18 +40,34 @@ defmodule MinecraftEx.Endpoint.PacketHandler do
     :ok = Socket.send(socket, render)
     {:halt, socket}
   end
-  
-  ## Login packets
-  
-  def handle_packet(%LoginStart{name: name, player_uuid: player_uuid}, socket) do
-    token = <<0x01, 0x02, 0x03, 0x04>>
-    Logger.info("#{name} is trying to login (uuid: #{player_uuid}) - Token: #{inspect(token)}")
 
+  ## Login packets
+
+  def handle_packet(%LoginStart{name: name, player_uuid: player_uuid}, socket) do
+    Logger.info("#{name} is trying to login (uuid: #{player_uuid})")
+
+    token = :crypto.strong_rand_bytes(4)
     render = PacketViews.render(:encryption_request, %{token: token})
     :ok = Socket.send(socket, render)
-    {:cont, socket}
+
+    {:cont, assign(socket, token: token)}
   end
-  
+
+  def handle_packet(
+        %EncryptionResponse{shared_secret: secret, verify_token: verify_token},
+        socket
+      ) do
+    token = socket.assigns.token
+
+    case Crypto.decrypt(verify_token) do
+      ^token ->
+        {:cont, socket}
+
+      _ ->
+        {:halt, :invalid_token, socket}
+    end
+  end
+
   ## Default handler
 
   def handle_packet(packet, socket) do

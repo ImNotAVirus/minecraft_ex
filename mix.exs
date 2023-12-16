@@ -22,7 +22,7 @@ defmodule MinecraftEx.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:elvengard_network, path: "../.."},
+      {:elvengard_network, github: "imnotavirus/elvengard_network"},
       {:poison, "~> 5.0"}
     ]
   end
