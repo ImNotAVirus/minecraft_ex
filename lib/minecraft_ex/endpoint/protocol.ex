@@ -21,7 +21,7 @@ defmodule MinecraftEx.Endpoint.Protocol do
     %Socket{transport: transport, transport_pid: transport_pid} = socket
     :ok = transport.setopts(transport_pid, packet: :raw, reuseaddr: true)
 
-    {:ok, assign(socket, state: :init, token: nil)}
+    {:ok, assign(socket, state: :init, token: nil, enc_key: nil)}
   end
 
   @impl true

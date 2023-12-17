@@ -7,7 +7,12 @@ defmodule MinecraftEx.PacketViews do
 
   alias MinecraftEx.Crypto
   alias MinecraftEx.Server.HandshakePackets.{PongResponse, StatusResponse}
-  alias MinecraftEx.Server.LoginPackets.{EncryptionRequest}
+
+  alias MinecraftEx.Server.LoginPackets.{
+    EncryptionRequest,
+    LoginSuccess,
+    SetCompression
+  }
 
   ## Handshake views
 
@@ -25,13 +30,26 @@ defmodule MinecraftEx.PacketViews do
 
   @impl true
   def render(:encryption_request, %{token: token}) do
-    der_key = Crypto.get_public_der()
-
     %EncryptionRequest{
-      # Not required
+      # Not required - default to ""
       server_id: "",
-      public_key: der_key,
-      verify_token: token,
+      public_key: Crypto.get_public_der(),
+      verify_token: token
     }
+  end
+
+  @impl true
+  def render(:login_success, %{uuid: uuid, username: username}) do
+    %LoginSuccess{
+      uuid: uuid,
+      username: username,
+      # FIXME: ????
+      properties: []
+    }
+  end
+
+  @impl true
+  def render(:set_compression, %{threshold: threshold}) do
+    %SetCompression{threshold: threshold}
   end
 end

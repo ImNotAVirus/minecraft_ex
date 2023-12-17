@@ -23,5 +23,27 @@ defmodule MinecraftEx.Types.UUID do
 
   @impl true
   @spec encode(t(), keyword) :: bitstring
-  def encode(_data, _opts), do: raise("unimplemented for now")
+  def encode(data, _opts) do
+    # Get each parts
+    <<
+      a::binary-8,
+      ?-,
+      b::binary-4,
+      ?-,
+      c::binary-4,
+      ?-,
+      d::binary-4,
+      ?-,
+      e::binary-12
+    >> = data
+
+    # Regroup all parts
+    full = <<a::binary, b::binary, c::binary, d::binary, e::binary>>
+
+    # Transform to int
+    int = String.to_integer(full, 16)
+
+    # 128 bits repr
+    <<int::unsigned-128>>
+  end
 end
