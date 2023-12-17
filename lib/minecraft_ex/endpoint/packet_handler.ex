@@ -14,8 +14,12 @@ defmodule MinecraftEx.Endpoint.PacketHandler do
       ["MinecraftEx", "Client", "LoginPackets" | _] ->
         MinecraftEx.PacketHandlers.Login.handle_packet(packet, socket)
 
+      ["MinecraftEx", "Client", "ConfigurationPackets" | _] ->
+        MinecraftEx.PacketHandlers.Configuration.handle_packet(packet, socket)
+
       _ ->
         Logger.error("No handler found for #{inspect(packet)}")
+        {:halt, :handler_not_found, socket}
     end
   end
 end

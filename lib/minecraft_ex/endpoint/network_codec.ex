@@ -13,14 +13,15 @@ defmodule MinecraftEx.Endpoint.NetworkCodec do
   def next(<<>>, _socket), do: {nil, <<>>}
 
   def next(message, %{assigns: assigns}) do
-    data = maybe_decrypt(message, assigns[:enc_key])
+    maybe_enc_key = assigns[:enc_key]
 
-    {length, rest} = VarInt.decode(data)
+    # Here we must decrypt packet sizz byte per byte
+    # Because the AES iv is statefull
+    {size, rest} = maybe_decrypt_size(message, maybe_enc_key)
+    <<maybe_cipher::binary-size(size), rest::binary>> = rest
+    data = maybe_decrypt(maybe_cipher, maybe_enc_key)
 
-    case byte_size(rest) == length do
-      true -> {rest, ""}
-      false -> raise "unsupported yet (need to check enc and manage iv)"
-    end
+    {data, rest}
   end
 
   @impl true
@@ -85,6 +86,25 @@ defmodule MinecraftEx.Endpoint.NetworkCodec do
 
       _ ->
         data
+    end
+  end
+
+  defp maybe_decrypt_size(data, nil), do: VarInt.decode(data)
+  defp maybe_decrypt_size(data, enc_key), do: decrypt_size(data, enc_key, [])
+
+  defp decrypt_size(<<head::binary-1, rest::binary>>, enc_key, acc) do
+    case maybe_decrypt(head, enc_key) do
+      <<byte::8>> = bin when byte <= 0x7F ->
+        {size, <<>>} =
+          [bin | acc]
+          |> Enum.reverse()
+          |> :erlang.iolist_to_binary()
+          |> VarInt.decode()
+
+        {size, rest}
+
+      bin ->
+        decrypt_size(rest, enc_key, [bin | acc])
     end
   end
 end

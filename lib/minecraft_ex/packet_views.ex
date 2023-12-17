@@ -14,6 +14,10 @@ defmodule MinecraftEx.PacketViews do
     SetCompression
   }
 
+  alias MinecraftEx.Server.ConfigurationPackets.FinishConfiguration
+
+  alias MinecraftEx.Server.PlayPackets.{Login}
+
   ## Handshake views
 
   @impl true
@@ -51,5 +55,40 @@ defmodule MinecraftEx.PacketViews do
   @impl true
   def render(:set_compression, %{threshold: threshold}) do
     %SetCompression{threshold: threshold}
+  end
+
+  ## Configuration views
+
+  @impl true
+  def render(:finish_configuration, _) do
+    %FinishConfiguration{}
+  end
+
+  ## Play views
+
+  @impl true
+  def render(:play_login, %{entity_id: entity_id}) do
+    %Login{
+      entity_id: entity_id,
+      is_hardcore: false,
+      dimensions: [],
+      max_players: 255,
+      view_distance: 16,
+      simulation_distance: 20,
+      reduced_debug_info: false,
+      enable_respawn_screen: true,
+      limited_crafting: false,
+      dimension_type: "dimension_type",
+      dimension_name: "dimension_name",
+      hashed_seed: 4567,
+      game_mode: :creative,
+      previous_game_mode: :creative,
+      is_debug: false,
+      is_flat: false,
+      has_death_location: false,
+      portal_cooldown: 0,
+      death_dimension_name: nil,
+      death_location: nil
+    }
   end
 end

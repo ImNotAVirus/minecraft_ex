@@ -89,9 +89,11 @@ defmodule MinecraftEx.Crypto do
     iv_size = 16
 
     full_data =
-      case byte_size(cipher) >= iv_size do
-        true -> cipher
-        false -> <<iv::binary, cipher::binary>>
+      case {byte_size(cipher) >= iv_size, is_encryption} do
+        {true, true} -> cipher
+        {true, false} -> data
+        {false, true} -> <<iv::binary, cipher::binary>>
+        {false, false} -> <<iv::binary, data::binary>>
       end
 
     offset = byte_size(full_data) - iv_size

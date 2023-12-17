@@ -24,4 +24,8 @@ defmodule MinecraftEx.Client.LoginPackets do
     field :shared_secret, ByteArray, prefix: true, as: :binary
     field :verify_token, ByteArray, prefix: true, as: :binary
   end
+
+  # 0x03 Login Acknowledged - state=login
+  @deserializable true
+  defpacket 0x03 when has_state(socket, :login), as: LoginAcknowledged
 end

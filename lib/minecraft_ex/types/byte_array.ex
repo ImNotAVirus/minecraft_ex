@@ -20,7 +20,7 @@ defmodule MinecraftEx.Types.ByteArray do
   @impl true
   @spec decode(bitstring, keyword) :: {t(), bitstring}
   def decode(data, opts) when is_binary(data) do
-    prefix = Keyword.get(opts, :prefix, false)
+    prefix = Keyword.get(opts, :prefix, true)
     as = Keyword.get(opts, :as, :list)
 
     data
@@ -33,7 +33,7 @@ defmodule MinecraftEx.Types.ByteArray do
   def encode(data, opts) when is_binary(data) or is_list(data) do
     raw = if is_list(data), do: List.to_string(data), else: data
 
-    case Keyword.get(opts, :prefix, false) do
+    case Keyword.get(opts, :prefix, true) do
       false ->
         raw
 

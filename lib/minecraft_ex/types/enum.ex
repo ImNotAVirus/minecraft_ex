@@ -19,16 +19,30 @@ defmodule MinecraftEx.Types.Enum do
   @spec decode(bitstring, keyword) :: {t(), bitstring}
   def decode(data, opts) when is_binary(data) do
     # Enum, from: VarInt, values: [status: 1, login: 2]
-    {from, opts} = Keyword.pop!(opts, :from)
-    {enumerators, opts} = Keyword.pop!(opts, :values)
+    # Enum, from: {VarInt, [opts]}, values: [status: 1, login: 2]
+    enumerators = Keyword.fetch!(opts, :values)
 
-    {value, rest} = from.decode(data, opts)
+    {value, rest} =
+      case Keyword.get(opts, :from) do
+        {from, from_opts} -> from.decode(data, from_opts)
+        from -> from.decode(data, [])
+      end
+
     {key, _v} = Enum.find(enumerators, &(elem(&1, 1) == value))
-
     {key, rest}
   end
 
   @impl true
   @spec encode(t(), keyword) :: bitstring
-  def encode(_data, _opts), do: raise("unimplemented for now")
+  def encode(data, opts) do
+    # Enum, from: VarInt, values: [status: 1, login: 2]
+    # Enum, from: {VarInt, [opts]}, values: [status: 1, login: 2]
+    enumerators = Keyword.fetch!(opts, :values)
+    value = Keyword.fetch!(enumerators, data)
+
+    case Keyword.get(opts, :from) do
+      {from, from_opts} -> from.encode(value, from_opts)
+      from -> from.encode(value, [])
+    end
+  end
 end

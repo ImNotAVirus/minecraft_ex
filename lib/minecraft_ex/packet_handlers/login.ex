@@ -12,7 +12,8 @@ defmodule MinecraftEx.PacketHandlers.Login do
 
   alias MinecraftEx.Client.LoginPackets.{
     EncryptionResponse,
-    LoginStart
+    LoginStart,
+    LoginAcknowledged
   }
 
   alias MinecraftEx.PacketViews
@@ -44,7 +45,7 @@ defmodule MinecraftEx.PacketHandlers.Login do
          secret <- Crypto.decrypt(shared_secret),
          {:ok, %{"name" => ^username} = data} <- Mojang.verify_session(username, secret),
          ^uuid <- normalize_uuid(data["id"]) do
-      new_socket = assign(socket, state: :play, enc_key: secret)
+      new_socket = assign(socket, enc_key: secret)
 
       render = PacketViews.render(:login_success, %{uuid: uuid, username: username})
       :ok = Socket.send(new_socket, render)
@@ -53,6 +54,16 @@ defmodule MinecraftEx.PacketHandlers.Login do
     else
       _ -> {:halt, :invalid_token, socket}
     end
+  end
+
+  def handle_packet(%LoginAcknowledged{}, socket) do
+    new_socket = assign(socket, state: :configuration)
+
+    # TODO: Later configure the client
+    render = PacketViews.render(:finish_configuration, %{})
+    :ok = Socket.send(new_socket, render)
+
+    {:cont, new_socket}
   end
 
   def handle_packet(packet, socket) do
